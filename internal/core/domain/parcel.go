@@ -3,7 +3,7 @@ package domain
 import "errors"
 
 type Parcel struct {
-	ID          string
+	ID          string `gorm:"default:uuid_generate_v4()"`
 	OwnerId     string
 	Name        string
 	Description string
