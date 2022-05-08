@@ -18,11 +18,6 @@ RUN set -x && apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -
 COPY --from=rest /app/server /app/server
 
 LABEL traefik.enable=true
-LABEL traefik.http.routers.parcel-rest.rule=PathPrefix(`/api/parcels`)
-LABEL traefik.http.routers.customer-parcel-rest.rule=Path(`/api/customers/{id}/parcels`)
-LABEL traefik.http.routers.parcel-rest.entrypoints=web
-LABEL traefik.http.routers.customer-parcel-rest.entrypoints=web
-LABEL traefik.http.routers.parcel-rest.middlewares='serviceheaders, traefik-forward-auth'
 LABEL traefik.http.middlewares.serviceheaders.headers.accesscontrolalloworiginlist=*
 LABEL traefik.http.middlewares.serviceheaders.headers.accessControlAllowMethods='GET, POST'
 LABEL traefik.http.middlewares.serviceheaders.headers.accessControlAllowHeaders='authorization, content-type'

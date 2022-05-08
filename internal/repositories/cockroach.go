@@ -48,7 +48,7 @@ func (repository *cockroachdb) Get(id string) (domain.Parcel, error) {
 func (repository *cockroachdb) GetAllFromCustomer(customerId string) ([]domain.Parcel, error) {
 	var parcels []domain.Parcel
 
-	repository.Connection.Find(&parcels).Where("ownerId = ?", customerId)
+	repository.Connection.Where("owner_Id = ?", customerId).Find(&parcels)
 
 	return parcels, nil
 }
