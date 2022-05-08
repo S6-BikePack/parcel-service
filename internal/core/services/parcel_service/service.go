@@ -3,15 +3,15 @@ package parcel_service
 import (
 	"fmt"
 	"parcel-service/internal/core/domain"
-	"parcel-service/internal/core/ports"
+	"parcel-service/internal/core/interfaces"
 )
 
 type service struct {
-	parcelRepository ports.ParcelRepository
-	messagePublisher ports.MessageBusPublisher
+	parcelRepository interfaces.ParcelRepository
+	messagePublisher interfaces.MessageBusPublisher
 }
 
-func New(parcelRepository ports.ParcelRepository, messagePublisher ports.MessageBusPublisher) *service {
+func New(parcelRepository interfaces.ParcelRepository, messagePublisher interfaces.MessageBusPublisher) *service {
 	return &service{
 		parcelRepository: parcelRepository,
 		messagePublisher: messagePublisher,

@@ -4,26 +4,48 @@ import (
 	"encoding/json"
 	"fmt"
 	"golang.org/x/exp/maps"
+	"parcel-service/config"
 	"parcel-service/internal/core/domain"
-	"parcel-service/internal/core/ports"
+	"parcel-service/internal/core/interfaces"
 	"parcel-service/pkg/rabbitmq"
 )
 
 type rabbitmqHandler struct {
 	rabbitmq *rabbitmq.RabbitMQ
-	service  ports.ParcelService
+	service  interfaces.ParcelService
 	handlers map[string]func(topic string, body []byte, handler *rabbitmqHandler) error
+	config   *config.Config
 }
 
-func NewRabbitMQ(rabbitmq *rabbitmq.RabbitMQ, service ports.ParcelService) *rabbitmqHandler {
+func NewRabbitMQ(rabbitmq *rabbitmq.RabbitMQ, service interfaces.ParcelService, cfg *config.Config) *rabbitmqHandler {
 	return &rabbitmqHandler{
 		rabbitmq: rabbitmq,
 		service:  service,
 		handlers: map[string]func(topic string, body []byte, handler *rabbitmqHandler) error{
 			"customer.create": CustomerCreateOrUpdate,
 			"customer.update": CustomerCreateOrUpdate,
+			"delivery." + cfg.ServiceArea.Identifier + ".create": DeliveryCreated,
 		},
+		config: cfg,
 	}
+}
+
+func DeliveryCreated(topic string, body []byte, handler *rabbitmqHandler) error {
+	var delivery struct {
+		Parcel domain.Parcel
+	}
+
+	if err := json.Unmarshal(body, &delivery); err != nil {
+		return err
+	}
+
+	_, err := handler.service.UpdateParcelStatus(delivery.Parcel.ID, 1)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func CustomerCreateOrUpdate(topic string, body []byte, handler *rabbitmqHandler) error {
@@ -40,10 +62,10 @@ func CustomerCreateOrUpdate(topic string, body []byte, handler *rabbitmqHandler)
 	return nil
 }
 
-func (handler *rabbitmqHandler) Listen(queue string) {
+func (handler *rabbitmqHandler) Listen() {
 
 	q, err := handler.rabbitmq.Channel.QueueDeclare(
-		queue,
+		handler.config.Server.Service+"-"+handler.config.ServiceArea.Identifier,
 		true,
 		false,
 		false,
@@ -59,7 +81,7 @@ func (handler *rabbitmqHandler) Listen(queue string) {
 		err = handler.rabbitmq.Channel.QueueBind(
 			q.Name,
 			s,
-			"topics",
+			handler.config.RabbitMQ.Exchange,
 			false,
 			nil)
 		if err != nil {

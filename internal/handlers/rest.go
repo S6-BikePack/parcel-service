@@ -4,17 +4,17 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"parcel-service/internal/core/domain"
-	"parcel-service/internal/core/ports"
+	"parcel-service/internal/core/interfaces"
 	"parcel-service/pkg/authorization"
 	"parcel-service/pkg/dto"
 )
 
 type HTTPHandler struct {
-	parcelService ports.ParcelService
+	parcelService interfaces.ParcelService
 	router        *gin.Engine
 }
 
-func NewRest(parcelService ports.ParcelService, router *gin.Engine) *HTTPHandler {
+func NewRest(parcelService interfaces.ParcelService, router *gin.Engine) *HTTPHandler {
 	return &HTTPHandler{
 		parcelService: parcelService,
 		router:        router,
